@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+# we need to avoid the script to be run more than one at same time. So added flock wait_time out as 20 mins. 
+timeout_in_secs=3600
+exec 250>/tmp/$(basename $0)_flockfile || exit 1
+flock -w $(expr ${timeout_in_secs} + 5 ) -x "250" || exit 1
+
+mkdir -p /home/ansible/logs
+timeout --preserve-status -s SIGKILL ${timeout_in_secs} ansible-playbook -i /home/user/bin/configs/ansible/hosts /home/user/bin/configs/ansible/playbooks/site.yml >> /home/ansible/logs/ansible-playbook_$(date +%F).log 2>&1
+response=$?
+if ([ "${response}" != 0 ]) then
+    echo "Error happened while push ansible playbook. Please check the log in /home/ansible/logs directory." | mailx -s "Ansible Error: $(hostname) - Issue on pushing ansible playbook" -S smtp="alerts.promptcloud.com" -r crons@alerts.promptcloud.com devops@promptcloud.com
+fi
+
+# Removing logs older than 15 days
+find /home/ansible/logs -type f -mtime +15 -exec rm -rf {} \;
+
+*********************************************************************
+site.yml includes a list of plyabooks with ansible 'include' statment in it
