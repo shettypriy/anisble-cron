@@ -9,7 +9,7 @@ mkdir -p /home/ansible/logs
 timeout --preserve-status -s SIGKILL ${timeout_in_secs} ansible-playbook -i /home/user/bin/configs/ansible/hosts /home/user/bin/configs/ansible/playbooks/site.yml >> /home/ansible/logs/ansible-playbook_$(date +%F).log 2>&1
 response=$?
 if ([ "${response}" != 0 ]) then
-    echo "Error happened while push ansible playbook. Please check the log in /home/ansible/logs directory." | mailx -s "Ansible Error: $(hostname) - Issue on pushing ansible playbook" -S smtp="alerts.promptcloud.com" -r crons@alerts.promptcloud.com devops@promptcloud.com
+    echo "Error happened while push ansible playbook. Please check the log in /home/ansible/logs directory."
 fi
 
 # Removing logs older than 15 days
